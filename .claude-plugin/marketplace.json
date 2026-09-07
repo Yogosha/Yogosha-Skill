@@ -1,0 +1,14 @@
+{
+  "name": "yogosha-skill",
+  "owner": {
+    "name": "H4MA"
+  },
+  "description": "Yogosha hunter tooling: a report-quality skill that helps you submit reports which survive triage.",
+  "plugins": [
+    {
+      "name": "yogosha",
+      "source": "./",
+      "description": "Prove the finding, score it honestly, draft it, create the draft on the platform, and verify attachments before submitting."
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+report/
+.session.json
+__pycache__/
+*.pyc
+scratch/
+*.har
