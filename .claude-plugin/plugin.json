@@ -7,5 +7,14 @@
     "name": "H4MA"
   },
   "homepage": "https://gitlab.yogosha.com/H4MA/yogosha-skill",
-  "repository": "https://gitlab.yogosha.com/H4MA/yogosha-skill"
+  "repository": "https://gitlab.yogosha.com/H4MA/yogosha-skill",
+  "keywords": [
+    "bug-bounty",
+    "security",
+    "yogosha",
+    "report-quality",
+    "cvss",
+    "triage"
+  ],
+  "license": "MIT"
 }
