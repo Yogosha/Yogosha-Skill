@@ -46,6 +46,10 @@ The `report-quality` skill also activates on its own whenever you are writing a 
 
 `scripts/yogosha_api.py check-attachments --report <id|link>` reads the draft and reports how many screenshots (markdown image insertions in the content) and whether a video are present. It is a presence and count check: it confirms the images and video exist, not what they depict. Credentials are read from the environment only, never a file.
 
+## Regional instances
+
+The helper talks to `https://api-cyber.yogosha.com` by default. On a regional instance, set `YOGOSHA_API_BASE` (for example `https://api-uae.yogosha.com`) before running the commands, and authenticate with a token issued for that instance. The access token is instance-specific.
+
 ## Requirements
 
 - Python 3 (standard library only).

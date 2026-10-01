@@ -30,4 +30,6 @@ Decide the mode from the input:
 3. If at least the screenshots you marked in Mode A are present (and a video if the finding needs one), give the hunter a clear "the report is ready to submit" note, and remind them the final submit is theirs to do in the UI.
 4. If attachments are missing, say exactly what is missing (which markers still have no image, or the missing video) and STOP. Do not tell them it is ready.
 
+When calling the helper script, pass `YOGOSHA_USER` and `YOGOSHA_TOKEN` from the in-context credentials, and set `YOGOSHA_API_BASE` from the session marker's `apiBase` when it is present (regional instances).
+
 Output rules: no em dashes; write arrows as ->. Never write the access token, PII, or report data to any file except the local `report/<slug>.md` and the scratchpad body file, and keep the token out of both. Follow the `report-quality` skill for every judgement.

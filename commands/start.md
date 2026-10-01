@@ -13,4 +13,6 @@ Authenticate a Yogosha hunter session. Arguments: `$ARGUMENTS` (expected: `<user
 4. Write a NON-SECRET session marker to your session scratchpad directory as `.session.json`: `{"authenticated": true, "username": "<username>"}`. Do NOT include the token.
 5. Confirm: "Authenticated as `<username>`." Remind the user that `/yogosha:report <finding>` works without auth for drafting and scoring, and that auth is what lets it create the draft on the platform and check attachments. The token stays in context only; run `/yogosha:clean` at the end to wipe session state.
 
+Regional instances: the default API base is `https://api-cyber.yogosha.com`. If the hunter is on a regional instance (for example the UAE instance at `https://api-uae.yogosha.com`), verify against that base instead, record the chosen base in the session marker as `"apiBase"`, and set `YOGOSHA_API_BASE` to it when later calling the helper script. The token is instance-specific.
+
 Reference: HTTP Basic auth, docs at https://api-cyber.yogosha.com/apidoc. The token is never persisted. No em dashes in output; write arrows as ->.

@@ -9,6 +9,9 @@ NEVER from a file on disk:
 They are set per-invocation by the skill from the in-context credentials and are
 never printed, logged, or written anywhere.
 
+The API base defaults to https://api-cyber.yogosha.com and can be overridden with
+YOGOSHA_API_BASE for a regional instance (for example https://api-uae.yogosha.com).
+
 Subcommands:
   check-attachments --report <id|link>
         Read-only. GET the report and report how many screenshots (markdown image
@@ -30,7 +33,7 @@ import sys
 import urllib.error
 import urllib.request
 
-BASE = "https://api-cyber.yogosha.com"
+BASE = os.environ.get("YOGOSHA_API_BASE", "https://api-cyber.yogosha.com").rstrip("/")
 TIMEOUT = 30
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/128.0 Safari/537.36"
 
