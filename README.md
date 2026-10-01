@@ -1,93 +1,43 @@
-# Yogosha-Skill
+# yogosha - report-quality skill for Yogosha hunters
 
+A Claude Code plugin that helps you submit bug bounty reports which survive triage. It captures the one proof that matters, forces rigorous controls, pushes back hard on an inflated CVSS score, keeps testing in scope and non-destructive, then creates the draft on the platform and checks its attachments before you submit.
 
+It is built from the triager's own checklist: the same things a report is graded on.
 
-## Getting started
+## What it does
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+- **Load-bearing proof.** Finds the single decisive step that proves your finding and makes sure the report shows it, instead of asserting a chain that stops one step short.
+- **Controls.** Adds the negative tests (junk id to 404, foreign id to 403, corrupted token to error, unchanged write to baseline) that turn a positive result into proof.
+- **Honest CVSS 4.0 (the assertive part).** Interrogates your proposed vector metric by metric, drops any High or Critical value that is not backed by captured evidence, and lands the realistic score. A defensible Medium beats a rejected Critical.
+- **Technical sanity.** Catches the classic false positives that get reports rejected (a missing postMessage `targetOrigin` is same-origin, not a wildcard; `nosniff` does not stop XHTML rendered as `application/xml`; attacker-initiated PKCE is no protection; and more).
+- **Scope and conduct.** Checks the target against the program scope and out-of-scope before you test and before you submit.
+- **Draft and attachments.** Once the finding checks out, it creates the draft on the platform with screenshot markers, then after you attach the screenshots or video it re-checks them and tells you the report is ready to submit. You do the final submit.
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+## Install
 
-## Add your files
-
-* [Create](https://docs.gitlab.com/user/project/repository/web_editor/#create-a-file) or [upload](https://docs.gitlab.com/user/project/repository/web_editor/#upload-a-file) files
-* [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
+In Claude Code:
 
 ```
-cd existing_repo
-git remote add origin https://gitlab.yogosha.com/H4MA/yogosha-skill.git
-git branch -M master
-git push -uf origin master
+/plugin marketplace add https://gitlab.yogosha.com/H4MA/yogosha-skill.git
+/plugin install yogosha@yogosha-skill
 ```
 
-## Integrate with your tools
+## Commands
 
-* [Set up project integrations](https://gitlab.yogosha.com/H4MA/yogosha-skill/-/settings/integrations)
+- `/yogosha:start <username> <access_token>` - authenticate to the Yogosha platform. Your token stays in the conversation context only and is never written to disk. Auth is what lets the skill create the draft and check attachments; drafting and scoring work without it.
+- `/yogosha:report <finding notes>` - the full flow: understand, scope-check, plan and run the PoC and controls non-destructively, run the CVSS reality-check, draft the report, and (when it checks out and you are authenticated) create the draft on the platform.
+- `/yogosha:report <report-link>` - after you have attached your screenshots to a draft, re-checks that the screenshots or video are present and gives the ready-to-submit verdict.
+- `/yogosha:clean` - wipe local drafts and session state at the end.
 
-## Collaborate with your team
+The report-quality methodology is also a skill that activates on its own whenever you are writing a report, so its rules apply even outside the commands.
 
-* [Invite team members and collaborators](https://docs.gitlab.com/user/project/members/)
-* [Create a new merge request](https://docs.gitlab.com/user/project/merge_requests/creating_merge_requests/)
-* [Automatically close issues from merge requests](https://docs.gitlab.com/user/project/issues/managing_issues/#closing-issues-automatically)
-* [Enable merge request approvals](https://docs.gitlab.com/user/project/merge_requests/approvals/)
-* [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
+## Requirements
 
-## Test and Deploy
+- Python 3 (standard library only; no packages to install).
+- The `code` CLI is used to open the local draft, if available.
 
-Use the built-in continuous integration in GitLab.
+## Security
 
-* [Get started with GitLab CI/CD](https://docs.gitlab.com/ci/quick_start/)
-* [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/user/application_security/sast/)
-* [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/topics/autodevops/requirements/)
-* [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/user/clusters/agent/)
-* [Set up protected environments](https://docs.gitlab.com/ci/environments/protected_environments/)
-
-***
-
-# Editing this README
-
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
-
-## Suggestions for a good README
-
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
-
-## Name
-Choose a self-explaining name for your project.
-
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
-
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
-
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
-
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
-
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
-
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
-
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+- Your Yogosha access token lives only in the conversation context. It is never written to any file, and it is passed to the helper script through an environment variable per call, not a config file.
+- The skill tests non-destructively and only in scope. It will not read real customers' data or perform destructive actions to show impact.
+- Run `/yogosha:clean` when you finish to remove local drafts and session state.
