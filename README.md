@@ -59,7 +59,7 @@ The hunter chooses at `/yogosha:start`. With no argument the plugin auto-detects
 | Create draft, check attachments | MCP tools | `scripts/yogosha_api.py` |
 | Works outside Claude Code | yes, any MCP client (Cursor, Codex, ...) | yes, anywhere Python runs |
 
-Whichever transport is used, the plugin only creates and reads its own drafts. It never calls submit, never edits a report it did not create, and never touches delete, fix, ignore, retest, or asset tools. Submitting stays your click in the UI.
+Whichever transport is used, the plugin acts only on your own reports, and every write (create a draft, comment, submit) waits for your explicit confirmation. Submitting is available over the API transport; the MCP has no submit tool, so there you submit in the Yogosha UI. It never fabricates evidence or comment text.
 
 ### Setting up the official Yogosha MCP
 
