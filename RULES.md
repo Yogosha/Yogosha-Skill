@@ -36,6 +36,7 @@ A report with four tight controls is believed. A report with none is treated as 
 - Never read, exfiltrate, or enumerate real customers' data. Proving a BOLA between two accounts you control is sufficient; reading thousands of real records is a conduct violation that gets the report penalized and can remove you from the program.
 - Restore anything you change; prefer non-destructive proofs (a 403-vs-200 differential, a read-back, an OPTIONS verb check).
 - Respect the program rate limits. No brute force, no denial of service.
+- Platform tools (the Yogosha MCP or API): create and read your own drafts only. Never call submit, never edit a report you did not create in this session, never call any delete, fix, ignore, retest, or asset tool. Submitting is the hunter's click in the UI.
 - If the only proof is destructive, describe the safe manual steps and stop, rather than damaging data.
 
 ## 4. CVSS 4.0 reality-check (the assertive gate, do NOT rubber-stamp the score)
@@ -98,7 +99,7 @@ Attach a screenshot or short video of the load-bearing proof AND its key control
 
 ## Report structure
 
-Use this skeleton. Replace each bracketed prompt. See `report-structure.md` for the standalone copy.
+Use this skeleton. Replace each bracketed prompt. A fill-in version lives at `templates/report-skeleton.md` in the repo; the Claude Code plugin drafts from it.
 
 ```
 # Title: concise, names the bug and the asset
