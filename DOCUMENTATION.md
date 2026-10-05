@@ -200,4 +200,7 @@ The agent acts only on the hunter's own reports, and every outward action is con
 - 401 or 403 at start: wrong username or token, token for another instance, or missing API key scopes.
 - `check-attachments` reports zero screenshots after you attached them: images must be inserted into the report content (markdown image insertions), not only uploaded. Video is counted separately.
 - `create-draft` fails with a missing field: `title`, `vulnerability`, and `program` are required; the plugin confirms both ids with you before the call.
+- `create-draft` returns 400 "title: Some characters are not allowed": the title cannot contain certain characters (for example braces, slashes, or an apostrophe). Rephrase the title in plain words and create again; this is a deterministic validation bounce that creates nothing, so a single retry with a clean title is safe.
+- `comment` returns "Access Forbidden" on a report that has a thread: the report is still a draft. A thread accepts comments only once the report is submitted and under review, so submit first, then comment. The plugin checks the status before posting and does not retry.
+- Submitting over MCP: the Yogosha MCP has no submit tool, so submit in the UI or use an API-transport session (`/yogosha:start api`). This is expected, not a failure.
 - The draft did not open in VS Code: the `code` CLI is not on PATH. The file is still at `report/<slug>.md`.
