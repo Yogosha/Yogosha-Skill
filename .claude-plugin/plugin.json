@@ -2,7 +2,7 @@
   "name": "yogosha",
   "displayName": "Yogosha Report Quality",
   "description": "Make Yogosha bug bounty reports pass triage: a captured load-bearing proof, rigorous controls, an honest CVSS 4.0 score that resists inflation, in-scope non-destructive testing, then create the draft on the platform (through the official Yogosha MCP or the API) and verify its attachments before you submit.",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "author": {
     "name": "H4MA"
   },

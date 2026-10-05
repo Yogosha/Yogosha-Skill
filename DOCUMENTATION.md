@@ -17,9 +17,10 @@ It is an advisory aid, not a security control. It makes a cooperating agent more
   plugin.json            plugin manifest (name "yogosha", version, metadata)
   marketplace.json       marketplace manifest so the repo can be added as a plugin source
 commands/
-  start.md               /yogosha:start  - pick the transport and verify access
-  report.md              /yogosha:report - build, score, draft, create, verify
-  clean.md               /yogosha:clean  - wipe drafts and session state
+  start.md               /yogosha:start   - pick the transport and verify access
+  report.md              /yogosha:report  - build, score, draft, create, verify, submit
+  comment.md             /yogosha:comment - draft and post a comment on your report
+  clean.md               /yogosha:clean   - wipe drafts and session state
 skills/report-quality/
   SKILL.md               the report-quality skill (auto-activates when writing a report)
 templates/
@@ -97,7 +98,13 @@ On success it writes a non-secret marker to the session scratchpad as `.session.
 
 ### `/yogosha:report <report-link or id>` (Mode B)
 
-Reads the draft and counts markdown image insertions in the abstract, proof of concept, and remediation fields, plus the video count. If the screenshots marked in Mode A are present (and a video where needed) it says the report is ready to submit. If anything is missing it names what, and stops. It is a presence check: it confirms attachments exist, not what they depict. The plugin never submits; that is the hunter's click in the UI.
+Reads the draft and counts markdown image insertions in the abstract, proof of concept, and remediation fields, plus the video count. If the screenshots marked in Mode A are present (and a video where needed) it says the report is ready to submit. If anything is missing it names what, and stops. It is a presence check: it confirms attachments exist, not what they depict.
+
+Submitting is confirm-gated and only on the hunter's explicit request, and only once the report is READY. Over the API transport the plugin submits via `submit-report` (which re-validates the whole report and rebuilds the body from the current content, so screenshots are preserved). The Yogosha MCP has no submit tool, so over MCP the hunter submits in the UI. The agent never submits on its own.
+
+### `/yogosha:comment <report link|id> <what to say>`
+
+Drafts a comment on one of the hunter's own reports (for example to answer a triager on an already-submitted report), shows the exact wording, and posts it only after the hunter confirms. Over MCP it uses `create_a_thread_comment` (thread resolved from `get_a_report`); over the API it uses the `comment` subcommand. Access is limited by the platform to the hunter's own reports. The reply must be factual; it never invents evidence. It never submits, accepts, or changes review status.
 
 ### `/yogosha:clean`
 
@@ -132,13 +139,21 @@ The token lives in the MCP server config and never enters the conversation. Yogo
 
 `scripts/yogosha_api.py`, standard library only. Credentials come from the environment per call, set by the plugin from the in-context credentials, never from a file.
 
+Export the credentials once in your shell, then call the script plainly so the token never appears in a command (the harness records commands to the session transcript):
+
 ```
-YOGOSHA_USER=<username> YOGOSHA_TOKEN=<token> python scripts/yogosha_api.py check-attachments --report <id|link>
-YOGOSHA_USER=<username> YOGOSHA_TOKEN=<token> python scripts/yogosha_api.py create-draft --body-file body.json            # dry run
-YOGOSHA_USER=<username> YOGOSHA_TOKEN=<token> python scripts/yogosha_api.py create-draft --body-file body.json --confirm  # POST
+export YOGOSHA_USER=<username> YOGOSHA_TOKEN=<token>
+python scripts/yogosha_api.py find-program --name "<part of a program name>"
+python scripts/yogosha_api.py check-attachments --report <id|link>
+python scripts/yogosha_api.py create-draft --body-file body.json                               # dry run
+python scripts/yogosha_api.py create-draft --body-file body.json --confirm                     # POST
+python scripts/yogosha_api.py comment --report <id|link> --body-file reply.txt                  # dry run
+python scripts/yogosha_api.py comment --report <id|link> --body-file reply.txt --confirm        # POST
+python scripts/yogosha_api.py submit-report --report <id|link> --vulnerability API1             # dry run
+python scripts/yogosha_api.py submit-report --report <id|link> --vulnerability API1 --confirm   # submit
 ```
 
-Output is one JSON object per call. `create-draft` without `--confirm` prints the plan and posts nothing. The body file is the full POST payload: `title`, `vulnerability` (class code), `program` (id), and `content` with `abstract`, `proofOfConcept`, `remediation`, `scopeUrl`, and `cvssResearcher`.
+Output is one JSON object per call. Every write subcommand (`create-draft`, `comment`, `submit-report`) is dry-run by default and only acts with `--confirm`. The create body file is the full POST payload: `title`, `vulnerability` (class code), `program` (id), and `content` with `abstract`, `proofOfConcept`, `remediation`, `scopeUrl`, and `cvssResearcher` (`{"vector": "CVSS:4.0/..."}`; the platform computes the score and severity). `submit-report` re-validates the whole report, so it rebuilds the body from the report's current content and needs the same vulnerability class code used at create. `comment` resolves the report's thread and posts with `visibility` `public`; `--parent <commentId>` replies to a specific message.
 
 ### Choosing
 
@@ -160,13 +175,14 @@ Tokens are instance-specific.
 
 ## 6. Platform discipline (both transports)
 
-The agent creates and reads its own drafts only. It never calls submit, never edits a report it did not create in the session, and never calls delete, fix, ignore, retest, or asset tools. Every platform write is shown as a dry run and waits for the hunter's confirmation. This rule is in `RULES.md`, the skill, and every adapter.
+The agent acts only on the hunter's own reports, and every outward action is confirm-gated. It may create and read drafts, comment on the hunter's own report (after showing the draft reply), and submit the hunter's own report (only when asked, API transport). Create and submit are single committed actions: each is called once, and on error the agent reports and stops rather than retrying or creating probe drafts. It never accepts a report, never changes review status (triager actions a hunter cannot take), never deletes, and never fabricates evidence or comment text. This rule is in `RULES.md`, the skill, and every adapter.
 
 ## 7. Security model
 
-- The access token is never written to disk by this project. MCP mode: in the MCP server config, from an env var. API mode: conversation context only, passed per call through the environment.
+- The access token is never written to disk by this project. MCP mode: in the MCP server config, fed from an env var, never in the conversation. API mode: supplied through environment variables; the recommended setup is to export `YOGOSHA_USER` and `YOGOSHA_TOKEN` before launching so the token never enters the conversation or any command. The helper never reads credentials from a file.
+- Caution (API mode): anything typed into a shell command, including an inline `VAR=secret` or `export`, is recorded by the harness into the session transcript on disk. The commands therefore never put the token in a command; the script inherits it from the environment. If the token was passed to `/yogosha:start` as an argument, `/yogosha:clean` wipes the transcript that captured it.
 - The session marker holds no secrets.
-- The only files written are the local draft under `report/` and, in API mode, the JSON body in the session scratchpad. `/yogosha:clean` removes both.
+- The only files written are the local draft under `report/` and, in API mode, the JSON body or comment text in the session scratchpad. `/yogosha:clean` removes them.
 - Testing is in scope and non-destructive by rule. No real customer data is read, no destructive action is taken to show impact.
 - CI runs GitLab secret detection on every push.
 
