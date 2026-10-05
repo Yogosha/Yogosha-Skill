@@ -13,13 +13,15 @@ The plugin can reach the platform two ways. The hunter chooses here; every later
 ## Decide the transport
 
 1. If the arguments are exactly `mcp` -> MCP flow.
-2. If the arguments are `<username> <access_token>` -> API flow.
-3. If the arguments are empty -> auto-detect: if the Yogosha MCP tools are available in this session (`get_a_program`, `create_a_report`, `get_a_report`, `list_reports`, served by the MCP server named `yogosha`), use the MCP flow; otherwise tell the user the usage below and STOP.
+2. If the arguments are exactly `api` -> API flow using the environment credentials (`YOGOSHA_USER` and `YOGOSHA_TOKEN` already exported by the hunter). This is the recommended API form, because the token never enters the conversation.
+3. If the arguments are `<username> <access_token>` -> API flow, fallback form (warn as described below).
+4. If the arguments are empty -> auto-detect: if the Yogosha MCP tools are available in this session (`get_a_program`, `create_a_report`, `get_a_report`, `list_reports`, served by the MCP server named `yogosha`), use the MCP flow; else if `YOGOSHA_USER` and `YOGOSHA_TOKEN` are set in the environment, use the API flow; otherwise tell the user the usage below and STOP.
 
 Usage to print when needed:
 ```
 /yogosha:start mcp                          (official Yogosha MCP, configure it once with: claude mcp add --transport http yogosha https://api-cyber.yogosha.com/mcp --header "Authorization: Basic ${YOGOSHA_BASIC}")
-/yogosha:start <username> <access_token>    (API helper, token stays in conversation context)
+/yogosha:start api                          (API helper, reads YOGOSHA_USER and YOGOSHA_TOKEN from the environment; export them before launching)
+/yogosha:start <username> <access_token>    (API helper, fallback: the token is in the conversation; prefer the env form above)
 ```
 where `YOGOSHA_BASIC` is `base64(username:access_token)` set in the hunter's shell environment.
 
