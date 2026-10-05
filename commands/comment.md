@@ -18,7 +18,7 @@ Access is limited by the platform to the hunter's own reports, so you can only c
 5. **Post it (only after confirmation).**
    - MCP: call `create_a_thread_comment` with `threadId`, `body` (the confirmed text), `visibility: "public"`, and `parentId` set to the comment id when replying to a specific message.
    - API: write the confirmed text to a scratchpad file and run `python ${CLAUDE_PLUGIN_ROOT}/scripts/yogosha_api.py comment --report <id|link> --body-file <path> [--parent <commentId>]` (dry-run, prints the plan), then after the hunter confirms run it again with `--confirm`. Credentials come from the environment (see `/yogosha:start`).
-6. **Confirm the result.** Report the posted comment id. Never call a submit, accept, or review-status tool from here.
+6. **Confirm the result.** Report the posted comment id. A comment does not submit the report; submitting stays a separate, explicit step.
 
 Posting is a single committed action: call the comment tool (or the script with `--confirm`) exactly ONCE. If it errors (for example the MCP returns "Error while executing tool" or times out), report the error and STOP, do not retry in a loop, so a flaky transport cannot post duplicate comments. If unsure whether it landed, read the thread once to check before any retry.
 

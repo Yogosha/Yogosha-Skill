@@ -104,7 +104,7 @@ Submitting is confirm-gated and only on the hunter's explicit request, and only 
 
 ### `/yogosha:comment <report link|id> <what to say>`
 
-Drafts a comment on one of the hunter's own reports (for example to answer a triager on an already-submitted report), shows the exact wording, and posts it only after the hunter confirms. Over MCP it uses `create_a_thread_comment` (thread resolved from `get_a_report`); over the API it uses the `comment` subcommand. Access is limited by the platform to the hunter's own reports. The reply must be factual; it never invents evidence. It never submits, accepts, or changes review status.
+Drafts a comment on one of the hunter's own reports (for example to answer a triager on an already-submitted report), shows the exact wording, and posts it only after the hunter confirms. Over MCP it uses `create_a_thread_comment` (thread resolved from `get_a_report`); over the API it uses the `comment` subcommand. Access is limited by the platform to the hunter's own reports. The reply must be factual; it never invents evidence. A comment does not submit the report.
 
 ### `/yogosha:clean`
 
@@ -175,7 +175,7 @@ Tokens are instance-specific.
 
 ## 6. Platform discipline (both transports)
 
-The agent acts only on the hunter's own reports, and every outward action is confirm-gated. It may create and read drafts, comment on the hunter's own report (after showing the draft reply), and submit the hunter's own report (only when asked, API transport). Create and submit are single committed actions: each is called once, and on error the agent reports and stops rather than retrying or creating probe drafts. It never accepts a report, never changes review status (triager actions a hunter cannot take), never deletes, and never fabricates evidence or comment text. This rule is in `RULES.md`, the skill, and every adapter.
+The agent acts only on the hunter's own reports, and every outward action is confirm-gated. It may create and read drafts, comment on the hunter's own report (after showing the draft reply), and submit it (only when asked, API transport). Create, submit, and comment are single committed actions: each is called once, and on error the agent reports and stops rather than retrying, so a flaky transport cannot leave probe drafts or duplicate comments. It never fabricates evidence or comment text, and submitting stays the hunter's decision. Triage and organization actions (accepting a report, changing its review status, deleting) are reserved by the platform for those accounts and sit outside the hunter flow. This rule is in `RULES.md`, the skill, and every adapter.
 
 ## 7. Security model
 
