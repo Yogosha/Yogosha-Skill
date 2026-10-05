@@ -9,9 +9,7 @@ GUARD: read `.session.json` from your session scratchpad. Commenting requires `a
 
 Access is limited by the platform to the hunter's own reports, so you can only comment on those. You never comment on a report the hunter did not author.
 
-1. **Identify the report and its thread.**
-   - MCP: call `get_a_report` with `reportId` and `embed: ["content"]`. Use its `threadId`. If there is no `threadId`, the report has no thread yet (it is probably still a draft, not submitted); say so and STOP.
-   - API: the helper resolves the thread for you from the report id.
+1. **Identify the report, and check it is submitted.** A report's thread only accepts comments once the report has been submitted and is under review. A draft, even though it has a `threadId`, rejects a comment with "Access Forbidden". So read the report first (MCP: `get_a_report` with `reportId`; API: the helper resolves it) and check its status. If the status is still `draft` (not `reviewing` or later), tell the hunter the report must be submitted before anyone can comment on its thread, and STOP. Otherwise use its `threadId`.
 2. **Understand the context.** If the hunter is answering a triager, read the existing thread so the reply is on point. MCP: the comments are on the report's thread. API: run `python ${CLAUDE_PLUGIN_ROOT}/scripts/yogosha_api.py get-thread --report <id>` is not provided; instead summarize from the hunter's description, or read the report content. Keep the reply grounded in what the report actually shows.
 3. **Draft the comment.** Write a clear, factual reply. Do not fabricate results, do not promise evidence that is not in the report, and do not restate an inflated severity. If the triager asked for something the hunter has not demonstrated, say that plainly rather than bluffing.
 4. **Show it and get confirmation.** Print the exact comment text and the target (report id, thread id, whether it is a reply to a specific comment). Do nothing on the platform until the hunter confirms the wording.
