@@ -14,9 +14,9 @@ check:
   script:
   - python scripts/build_adapters.py --check
   - python -m py_compile scripts/yogosha_api.py scripts/build_adapters.py
-  - python -c "import json; json.load(open('.claude-plugin/plugin.json')); json.load(open('.claude-plugin/marketplace.json'))"
-  - printf '{"title":"t","vulnerability":"x","program":"p","content":{"abstract":"a"}}' > /tmp/body.json
-  - python scripts/yogosha_api.py create-draft --body-file /tmp/body.json | grep -q '"dryRun": true'
+  - 'python -c "import json; json.load(open(\".claude-plugin/plugin.json\")); json.load(open(\".claude-plugin/marketplace.json\"))"'
+  - 'printf ''{"title":"t","vulnerability":"x","program":"p","content":{"abstract":"a"}}'' > /tmp/body.json'
+  - 'python scripts/yogosha_api.py create-draft --body-file /tmp/body.json | grep -q ''"dryRun": true'''
 
 secret_detection:
   stage: secret-detection
