@@ -37,7 +37,7 @@ A report with four tight controls is believed. A report with none is treated as 
 - Never read, exfiltrate, or enumerate real customers' data. Proving a BOLA between two accounts you control is sufficient; reading thousands of real records is a conduct violation that gets the report penalized and can remove you from the program.
 - Restore anything you change; use non-destructive proofs where possible (a 403-vs-200 differential, a read-back, an OPTIONS verb check).
 - Respect the program rate limits. No brute force, no DoS.
-- Platform tools (the Yogosha MCP or API): create and read your own drafts only. Never call submit, never edit a report you did not create in this session, never call any delete, fix, ignore, retest, or asset tool. Submitting is the hunter's click in the UI.
+- Platform tools (the Yogosha MCP or API): you act only on the hunter's own reports, and every outward action is a single step gated on the hunter's explicit confirmation. You may create and read drafts, post a comment on the hunter's own report (after showing the draft reply and getting the go-ahead), and submit the hunter's own report (only when they ask). Create and submit are single committed actions: call each once, and on error report it and stop rather than retrying or creating probe drafts. Never accept a report, never change its review status (those are triager actions a hunter cannot take), never delete, and never fabricate evidence or comment text. Submitting stays the hunter's decision.
 - If the only proof is destructive, describe the safe manual steps and stop, rather than damaging data.
 
 ## 4. CVSS 4.0 reality-check (the assertive gate - do NOT rubber-stamp the score)

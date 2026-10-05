@@ -40,7 +40,8 @@ Beyond the rules, the Claude Code plugin adds commands that create the draft on 
 
 - `/yogosha:start mcp` or `/yogosha:start <username> <access_token>` - start a session and pick how the plugin reaches the platform (see below).
 - `/yogosha:report <finding notes>` - understand, scope-check, run the PoC and controls non-destructively, run the CVSS reality-check, draft the report, and (when authenticated) create the draft on the platform.
-- `/yogosha:report <report-link>` - after you attach screenshots, re-check that the screenshots or video are present and give the ready-to-submit verdict.
+- `/yogosha:report <report-link>` - after you attach screenshots, re-check that the screenshots or video are present, give the ready-to-submit verdict, and submit on your explicit go-ahead (API transport; the MCP has no submit tool so submit is a UI action).
+- `/yogosha:comment <report> <what to say>` - draft a reply on one of your reports (for example to answer a triager) and post it after you confirm the wording.
 - `/yogosha:clean` - wipe local drafts and session state at the end.
 
 The `report-quality` skill also activates on its own whenever you are writing a report, so its rules apply even outside the commands.
