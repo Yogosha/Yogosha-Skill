@@ -99,7 +99,7 @@ Attach a screenshot or short video of the load-bearing proof AND its key control
 
 ## Report structure
 
-Use this skeleton. Replace each bracketed prompt. See `report-structure.md` for the standalone copy.
+Use this skeleton. Replace each bracketed prompt. A fill-in version lives at `templates/report-skeleton.md` in the repo; the Claude Code plugin drafts from it.
 
 ```
 # Title: concise, names the bug and the asset

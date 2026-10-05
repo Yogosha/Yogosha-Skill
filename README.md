@@ -2,6 +2,8 @@
 
 Rules of engagement and report-quality guidance that help a hunter's AI agent submit bug bounty reports which survive triage: capture the one proof that matters, force rigorous controls, push back hard on an inflated CVSS score, keep testing in scope and non-destructive, and follow a clean report structure. Built from the triager's own checklist, the same things a report is graded on.
 
+This README is the overview. The full reference (layout, every command step by step, both transports, security model, maintenance, troubleshooting) is in [DOCUMENTATION.md](DOCUMENTATION.md).
+
 ## This is an advisory aid, not a security control
 
 These rules make a cooperating agent more likely to stay in scope, test non-destructively, and score honestly. They do not sandbox anything and cannot stop a determined or malicious operator, and they only take effect in an agent that loads them. Real prevention is infrastructure: a scoped egress proxy or VPN that only reaches in-scope hosts, rate limiting, and test-only data. Use these rules as the quality layer on top of that.
@@ -18,7 +20,7 @@ These rules make a cooperating agent more likely to stay in scope, test non-dest
 
 ## One source, many agents
 
-`RULES.md` is the canonical rules of engagement. `report-structure.md` is the shared report skeleton and pre-submit checklist. The files under `adapters/` embed that same content in each tool's native format, so the methodology never forks.
+`RULES.md` is the canonical rules of engagement, including the report skeleton and pre-submit checklist. The files under `adapters/` are generated from it by `scripts/build_adapters.py`, each with a header in that tool's native format, so the methodology never forks. CI fails if an adapter drifts.
 
 | Agent | Use this | Where it goes |
 | --- | --- | --- |
@@ -100,3 +102,7 @@ Authenticate with a token issued for that instance; the access token is instance
 - The plugin creates and reads its own drafts only. Submit, edit of other reports, and every destructive platform tool are off limits to the agent.
 - The rules test non-destructively and only in scope. They will not read real customers' data or perform destructive actions to show impact.
 - Run `/yogosha:clean` (or delete local drafts) when you finish.
+
+## Maintaining
+
+Edit `RULES.md`, then run `python scripts/build_adapters.py` to regenerate the adapters. CI runs the same script with `--check` plus a smoke test of the API helper and GitLab secret detection.
