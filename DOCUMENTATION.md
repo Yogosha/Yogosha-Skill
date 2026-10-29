@@ -45,7 +45,7 @@ LICENSE                  MIT
 ### Claude Code plugin (full flow)
 
 ```
-/plugin marketplace add https://gitlab.yogosha.com/H4MA/yogosha-skill.git
+/plugin marketplace add https://github.com/Yogosha/Yogosha-Skill.git
 /plugin install yogosha@yogosha-skill
 ```
 
