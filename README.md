@@ -24,7 +24,7 @@ These rules make a cooperating agent more likely to stay in scope, test non-dest
 
 | Agent | Use this | Where it goes |
 | --- | --- | --- |
-| Claude Code | the plugin at the repo root | `/plugin marketplace add https://gitlab.yogosha.com/H4MA/yogosha-skill.git` then `/plugin install yogosha@yogosha-skill` |
+| Claude Code | the plugin at the repo root | `/plugin marketplace add https://github.com/Yogosha/Yogosha-Skill.git` then `/plugin install yogosha@yogosha-skill` |
 | Claude Code (no plugin) | `adapters/claude-md/CLAUDE.md` | repo root as `CLAUDE.md` |
 | Codex / OpenAI CLI | `adapters/codex/AGENTS.md` | repo root as `AGENTS.md` (read automatically) |
 | Cursor | `adapters/cursor/.cursor/rules/report-quality.mdc` | `.cursor/rules/` in your project |
