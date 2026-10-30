@@ -36,7 +36,8 @@ adapters/                the same rules in each tool's native format (generated)
   cursor/.cursor/rules/report-quality.mdc
   windsurf/.windsurfrules
   raw-api/system-prompt.txt
-.gitlab-ci.yml           CI: adapter sync check, script smoke test, secret detection
+.gitlab-ci.yml           CI on GitLab: adapter sync, script smoke test, secret detection
+.github/workflows/       CI on GitHub (public mirror): adapter sync and script checks
 LICENSE                  MIT
 ```
 
@@ -129,7 +130,7 @@ Setup, once:
    ```
 3. Register the server:
    ```
-   claude mcp add --transport http yogosha https://api-cyber.yogosha.com/mcp --header "Authorization: Basic ${YOGOSHA_BASIC}"
+   claude mcp add --transport http yogosha https://api-cyber.yogosha.com/mcp --header 'Authorization: Basic ${YOGOSHA_BASIC}'
    ```
 4. Restart Claude Code, then `/yogosha:start mcp`.
 
@@ -179,12 +180,12 @@ The agent acts only on the hunter's own reports, and every outward action is con
 
 ## 7. Security model
 
-- The access token is never written to disk by this project. MCP mode: in the MCP server config, fed from an env var, never in the conversation. API mode: supplied through environment variables; the recommended setup is to export `YOGOSHA_USER` and `YOGOSHA_TOKEN` before launching so the token never enters the conversation or any command. The helper never reads credentials from a file.
+- The access token is never written to disk by this project. MCP mode: the `--header` value is single-quoted at setup, so the MCP server config stores the literal `${YOGOSHA_BASIC}` reference, not the secret, and Claude Code expands it from the environment at launch. The token itself stays in the env var, never in the config file or the conversation. (Double-quoting that command would expand the secret into the config on disk, so keep the single quotes.) API mode: supplied through environment variables; the recommended setup is to export `YOGOSHA_USER` and `YOGOSHA_TOKEN` before launching so the token never enters the conversation or any command. The helper never reads credentials from a file.
 - Caution (API mode): anything typed into a shell command, including an inline `VAR=secret` or `export`, is recorded by the harness into the session transcript on disk. The commands therefore never put the token in a command; the script inherits it from the environment. If the token was passed to `/yogosha:start` as an argument, `/yogosha:clean` wipes the transcript that captured it.
 - The session marker holds no secrets.
 - The only files written are the local draft under `report/` and, in API mode, the JSON body or comment text in the session scratchpad. `/yogosha:clean` removes them.
 - Testing is in scope and non-destructive by rule. No real customer data is read, no destructive action is taken to show impact.
-- CI runs GitLab secret detection on every push.
+- CI runs on GitLab (`.gitlab-ci.yml`: adapter sync, script checks, secret detection) and on GitHub via Actions (`.github/workflows/ci.yml`: the same adapter and script checks). GitHub also enables its own secret scanning on the public repo, and you can run `gitleaks detect --source . --log-opts="--all"` locally.
 
 ## 8. Maintenance
 

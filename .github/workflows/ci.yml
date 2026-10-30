@@ -1,0 +1,25 @@
+name: ci
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Adapters match RULES.md
+        run: python scripts/build_adapters.py --check
+      - name: Scripts compile
+        run: python -m py_compile scripts/yogosha_api.py scripts/build_adapters.py
+      - name: Manifests are valid JSON
+        run: python -c "import json; json.load(open('.claude-plugin/plugin.json')); json.load(open('.claude-plugin/marketplace.json'))"
+      - name: API helper dry-run posts nothing
+        run: |
+          printf '{"title":"t","vulnerability":"x","program":"p","content":{"abstract":"a"}}' > body.json
+          python scripts/yogosha_api.py create-draft --body-file body.json | grep -q '"dryRun": true'
