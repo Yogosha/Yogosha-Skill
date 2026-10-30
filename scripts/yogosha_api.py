@@ -50,7 +50,15 @@ import urllib.error
 import urllib.request
 
 BASE = os.environ.get("YOGOSHA_API_BASE", "https://api-cyber.yogosha.com").rstrip("/")
+# The Basic credential is only ever sent to an official Yogosha API host over TLS.
+# YOGOSHA_API_BASE is security-relevant: an unvalidated or http:// base would ship
+# the token offsite, or send it in cleartext. Reject anything that is not an
+# https://api-<instance>.yogosha.com host before any request carries the credential.
+_BASE_RE = re.compile(r"^https://api-[a-z0-9-]+\.yogosha\.com$")
 TIMEOUT = 30
+# A browser User-Agent is required: the api-*.yogosha.com edge (Cloudflare) rejects
+# the default python-urllib User-Agent with "error 1010". This is a compatibility
+# workaround, not an attempt to disguise the client.
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/128.0 Safari/537.36"
 
 
@@ -68,6 +76,9 @@ def creds():
 
 
 def api(method, path, payload=None):
+    if not _BASE_RE.match(BASE):
+        die(f"Refusing to use YOGOSHA_API_BASE={BASE!r}: it must be an official Yogosha "
+            f"API host over HTTPS (https://api-<instance>.yogosha.com).")
     user, token = creds()
     auth = base64.b64encode(f"{user}:{token}".encode()).decode()
     data = json.dumps(payload).encode() if payload is not None else None
@@ -95,7 +106,10 @@ def report_id(s):
     m = re.search(r"/reports/([A-Za-z0-9]+)", s)
     if m:
         return m.group(1)
-    return s
+    if re.fullmatch(r"[A-Za-z0-9]+", s):
+        return s
+    die(f"Not a valid report id or link: {s!r}. Expected an alphanumeric id or a "
+        f"/reports/<id> link.")
 
 
 IMG_RE = re.compile(r"!\[[^\]]*\]\([^)]*\)")

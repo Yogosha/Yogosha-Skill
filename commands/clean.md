@@ -5,9 +5,9 @@ description: End the hunter session and wipe local report drafts, session state,
 End the Yogosha hunter session and wipe everything session and target related. Delete:
 
 - `report/` contents (all local draft files).
-- The session scratchpad contents, including `.session.json` and any report body files written for the create-draft call.
-- Any pulled data in `/tmp` and in the project `tool-results` / `tasks` output dirs.
-- Any `*.json`, `*.zip`, `*.pdf`, `*.eml`, `*.har` in the working directory that came from testing.
+- The session scratchpad contents, including `.session.json` and any report body or comment files the plugin wrote there.
+
+Delete only files this plugin created for the session, named explicitly. Do NOT run broad deletes over the working directory or `/tmp` (for example `*.json`, `*.zip`, `*.pdf`, `*.har`): the working directory may be a real project holding the hunter's own files such as `package.json`, `tsconfig.json`, or `composer.json`. If you are unsure a file is yours, leave it and ask the hunter.
 
 Credentials:
 - API transport: the access token was only ever in conversation context, so it is discarded with the session; confirm you never wrote it to disk.
