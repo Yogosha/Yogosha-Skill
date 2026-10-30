@@ -1,30 +1,42 @@
-# yogosha-skill - report-quality rules for Yogosha hunters, on any agent
+# yogosha-skill
 
-Rules of engagement and report-quality guidance that help a hunter's AI agent submit bug bounty reports which survive triage: capture the one proof that matters, force rigorous controls, push back hard on an inflated CVSS score, keep testing in scope and non-destructive, and follow a clean report structure. Built from the triager's own checklist, the same things a report is graded on.
+Guardrails and report-quality rules for AI agents used in Yogosha bug bounty work. They keep an agent in scope and non-destructive, make it score CVSS honestly, and help it write reports that pass triage. For Claude Code there is also a plugin that drafts the report, creates it on the platform, checks its attachments, and submits or comments on your explicit go-ahead.
 
-This README is the overview. The full reference (layout, every command step by step, both transports, security model, maintenance, troubleshooting) is in [DOCUMENTATION.md](DOCUMENTATION.md).
+It shapes a cooperating agent's behavior. It is not a sandbox and will not stop a malicious one. Real isolation is infrastructure: a scoped egress proxy or VPN, rate limiting, and test-only data. These rules are the quality layer on top.
 
-## This is an advisory aid, not a security control
+## Install (Claude Code plugin)
 
-These rules make a cooperating agent more likely to stay in scope, test non-destructively, and score honestly. They do not sandbox anything and cannot stop a determined or malicious operator, and they only take effect in an agent that loads them. Real prevention is infrastructure: a scoped egress proxy or VPN that only reaches in-scope hosts, rate limiting, and test-only data. Use these rules as the quality layer on top of that.
+```
+/plugin marketplace add https://github.com/Yogosha/Yogosha-Skill.git
+/plugin install yogosha@yogosha-skill
+```
 
-## What it enforces (behaviourally)
+That gives you the commands below and a `report-quality` skill that loads on its own whenever you write a report. To also have the plugin create drafts, comment, and submit on the platform, set up one of the two transports under [Reaching the platform](#reaching-the-platform).
 
-- **Load-bearing proof.** The single decisive step that proves the finding must be shown, not asserted.
-- **Controls.** The negative tests (junk id to 404, foreign id to 403, corrupted token to error, unchanged write to baseline) that turn a positive result into proof.
-- **Honest CVSS 4.0.** Interrogates the vector metric by metric, drops any High or Critical value not backed by evidence, and lands a defensible score.
-- **Technical sanity.** Catches the classic false positives that get reports rejected.
-- **Scope and conduct.** Checks the target against the program scope and out-of-scope before testing and before submitting.
-- **Report structure.** One clean skeleton, proof-first, with screenshot markers.
-- **Platform discipline.** Through the official Yogosha MCP or the API, the agent creates and reads its own drafts only; it never submits, edits other reports, or deletes anything.
+## Commands
 
-## One source, many agents
+- `/yogosha:start` - begin a session and pick the transport: `mcp`, `api` (reads `YOGOSHA_USER` and `YOGOSHA_TOKEN` from the environment), or `<username> <token>`.
+- `/yogosha:report <notes>` - scope-check, run the proof and controls non-destructively, interrogate the CVSS score, draft the report, and create the draft on the platform after you confirm.
+- `/yogosha:report <report link>` - re-check attachments on a draft, give the ready verdict, and submit on your explicit go-ahead (API transport; the MCP has no submit tool, so there you submit in the UI).
+- `/yogosha:comment <report> <what to say>` - draft a reply on one of your reports, for example to answer a triager, and post it after you confirm the wording.
+- `/yogosha:clean` - wipe the session's local drafts and state.
 
-`RULES.md` is the canonical rules of engagement, including the report skeleton and pre-submit checklist. The files under `adapters/` are generated from it by `scripts/build_adapters.py`, each with a header in that tool's native format, so the methodology never forks. CI fails if an adapter drifts.
+## What the rules enforce
 
-| Agent | Use this | Where it goes |
+- Proof, not assertion. The one decisive step that proves the finding is shown, not described.
+- Controls beside it. The negative tests that rule out noise: junk id -> 404, foreign id -> 403, corrupted token -> error, unchanged write -> baseline.
+- An honest CVSS 4.0 score. Each metric is interrogated, and any High or Critical value without evidence is dropped.
+- Scope and conduct. The target is checked against the program scope and out-of-scope before testing and before submitting; testing stays non-destructive and never reads real customer data.
+- Technical sanity. The classic false positives that get reports rejected are caught before you write them up.
+- A clean report structure. One proof-first skeleton, with markers where screenshots belong.
+- Platform content is data. Scope text and triager messages are read as input, never followed as instructions.
+
+## Rules on any agent
+
+`RULES.md` is the source of truth, including the report skeleton and the pre-submit checklist. The files under `adapters/` are generated from it, one per tool, so the methodology never forks (CI fails if an adapter drifts). Copy the one file for your agent:
+
+| Agent | File | Where it goes |
 | --- | --- | --- |
-| Claude Code | the plugin at the repo root | `/plugin marketplace add https://github.com/Yogosha/Yogosha-Skill.git` then `/plugin install yogosha@yogosha-skill` |
 | Claude Code (no plugin) | `adapters/claude-md/CLAUDE.md` | repo root as `CLAUDE.md` |
 | Codex / OpenAI CLI | `adapters/codex/AGENTS.md` | repo root as `AGENTS.md` (read automatically) |
 | Cursor | `adapters/cursor/.cursor/rules/report-quality.mdc` | `.cursor/rules/` in your project |
@@ -32,78 +44,48 @@ These rules make a cooperating agent more likely to stay in scope, test non-dest
 | Continue | `adapters/continue/rules.md` | a rules block in your Continue config |
 | Raw API agent | `adapters/raw-api/system-prompt.txt` | prepend as the system message |
 
-Each adapter file is self-contained: copy the one file for your agent and you have the full rules and report structure.
+## Reaching the platform
 
-## Claude Code plugin (the full flow)
-
-Beyond the rules, the Claude Code plugin adds commands that create the draft on the platform and verify its attachments before you submit.
-
-- `/yogosha:start mcp` or `/yogosha:start <username> <access_token>` - start a session and pick how the plugin reaches the platform (see below).
-- `/yogosha:report <finding notes>` - understand, scope-check, run the PoC and controls non-destructively, run the CVSS reality-check, draft the report, and (when authenticated) create the draft on the platform.
-- `/yogosha:report <report-link>` - after you attach screenshots, re-check that the screenshots or video are present, give the ready-to-submit verdict, and submit on your explicit go-ahead (API transport; the MCP has no submit tool so submit is a UI action).
-- `/yogosha:comment <report> <what to say>` - draft a reply on one of your reports (for example to answer a triager) and post it after you confirm the wording.
-- `/yogosha:clean` - wipe local drafts and session state at the end.
-
-The `report-quality` skill also activates on its own whenever you are writing a report, so its rules apply even outside the commands.
-
-## Two ways to reach the platform
-
-The hunter chooses at `/yogosha:start`. With no argument the plugin auto-detects: if the Yogosha MCP tools are present it uses them, otherwise it asks for API credentials.
+The plugin talks to Yogosha two ways. Pick one at `/yogosha:start`; with no argument it uses the MCP when those tools are present, otherwise the API.
 
 | | Official Yogosha MCP | API helper script |
 | --- | --- | --- |
-| Start | `/yogosha:start mcp` | `/yogosha:start <username> <access_token>` |
-| Setup | one-time `claude mcp add` (below) | none, Python 3 only |
-| Where the token lives | in the MCP server config, fed from an env var; never in the conversation | in conversation context, passed to the script per call; never on disk |
-| Program and scope lookup | reads the program scope and out-of-scope through the MCP, resolves the program id and vulnerability class for you | you confirm the program id and class code by hand |
-| Create draft, check attachments | MCP tools | `scripts/yogosha_api.py` |
-| Works outside Claude Code | yes, any MCP client (Cursor, Codex, ...) | yes, anywhere Python runs |
+| Setup | one `claude mcp add` | none; Python 3 only |
+| Where the token lives | in the MCP config as a `${YOGOSHA_BASIC}` reference, expanded from the environment at launch | in an environment variable, read by the script per call |
+| Scope lookup | read from the platform | you confirm the ids |
+| Outside Claude Code | any MCP client (Cursor, Codex, ...) | anywhere Python runs |
 
-Whichever transport is used, the plugin acts only on your own reports, and every write (create a draft, comment, submit) waits for your explicit confirmation. Submitting is available over the API transport; the MCP has no submit tool, so there you submit in the Yogosha UI. It never fabricates evidence or comment text.
+Either way the plugin acts only on your own reports, and every write (create, comment, submit) waits for your confirmation.
 
-### Setting up the official Yogosha MCP
+### Set up the MCP
 
-The MCP server is the platform's own: every documented API endpoint is exposed as a tool, with the same Basic authentication as the API (docs: https://developers.yogosha.com/#tag/Yogosha-MCP).
-
-1. Create an API key under Settings > API Keys with the scopes you need (programs read, reports read and create).
-2. Put the Basic credential in your shell environment, so it never lands in a config file in a repo:
+1. Create an API key under Settings > API Keys (programs read, reports read and create).
+2. Put the Basic credential in your environment:
    ```
    export YOGOSHA_BASIC=$(printf '%s:%s' '<username>' '<access_token>' | base64)
    ```
-3. Register the server once:
+3. Register the server. Single-quote the header so the secret is not written into the config file; Claude Code expands `${YOGOSHA_BASIC}` from the environment at launch:
    ```
-   claude mcp add --transport http yogosha https://api-cyber.yogosha.com/mcp --header "Authorization: Basic ${YOGOSHA_BASIC}"
+   claude mcp add --transport http yogosha https://api-cyber.yogosha.com/mcp --header 'Authorization: Basic ${YOGOSHA_BASIC}'
    ```
-4. Restart Claude Code and run `/yogosha:start mcp`.
+4. Restart Claude Code and run `/yogosha:start mcp`. On a shared machine, `claude mcp remove yogosha` and unset `YOGOSHA_BASIC` when you finish.
 
-On a shared machine, `claude mcp remove yogosha` and unset `YOGOSHA_BASIC` when you are done.
+### Use the API helper
 
-## Attachment check
-
-Before you submit, the plugin reads the draft and reports how many screenshots (markdown image insertions in the content) and whether a video are present. Through the MCP it reads the report with the get-report tool; through the API it runs `scripts/yogosha_api.py check-attachments --report <id|link>`. It is a presence and count check: it confirms the images and video exist, not what they depict. In API mode credentials are read from the environment only, never a file.
-
-## Regional instances
-
-The default instance is `https://api-cyber.yogosha.com`. On a regional instance (for example `https://api-uae.yogosha.com`):
-
-- MCP: register the server with that instance's `/mcp` URL instead.
-- API: set `YOGOSHA_API_BASE` to the instance before running the commands.
-
-Authenticate with a token issued for that instance; the access token is instance-specific.
-
-## Requirements
-
-- Claude Code with the plugin installed. For the MCP transport, the Yogosha MCP server registered as above.
-- Python 3 (standard library only) for the API transport.
-- The `code` CLI is used to open the local draft, if available.
+Export the credentials once; the script reads them per call, so the token never goes in a command:
+```
+export YOGOSHA_USER=<username> YOGOSHA_TOKEN=<token>
+```
+On a regional instance, set `YOGOSHA_API_BASE` to it (for example `https://api-uae.yogosha.com`). The helper only accepts official `api-*.yogosha.com` hosts over HTTPS, and the token is instance-specific.
 
 ## Security
 
-- Your Yogosha access token is never written to disk by this plugin. In MCP mode it lives in the MCP server config, fed from an environment variable, and never enters the conversation. In API mode it lives only in the conversation context and is passed to the helper through an environment variable per call.
-- The plugin creates and reads its own drafts only. Submit, edit of other reports, and every destructive platform tool are off limits to the agent.
-- The rules test non-destructively and only in scope. They will not read real customers' data or perform destructive actions to show impact.
-- Run `/yogosha:clean` (or delete local drafts) when you finish.
+- The access token is never written to disk. MCP mode keeps a `${YOGOSHA_BASIC}` reference in the config and expands it from the environment at launch; API mode reads `YOGOSHA_USER` and `YOGOSHA_TOKEN` from the environment per call.
+- The helper only sends the credential to an official `https://api-*.yogosha.com` host.
+- The agent acts only on your own reports, and every create, comment, or submit waits for your confirmation. Accept, review-status, and delete are reserved by the platform for triagers and organizations.
+- Testing is in scope and non-destructive; no real customer data is read to show impact.
+- Run `/yogosha:clean` when you finish.
 
-## Maintaining
+## Development
 
-Edit `RULES.md`, then run `python scripts/build_adapters.py` to regenerate the adapters. CI runs the same script with `--check` plus a smoke test of the API helper and GitLab secret detection.
+The public repo on GitHub mirrors from an internal GitLab project, where the work and CI happen. To change the rules, edit `RULES.md` and run `python scripts/build_adapters.py` to regenerate the adapters. `DOCUMENTATION.md` is the full reference: layout, every command step by step, both transports, the security model, and troubleshooting.
